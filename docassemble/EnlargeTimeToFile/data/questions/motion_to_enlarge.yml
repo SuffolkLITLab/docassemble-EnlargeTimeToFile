@@ -1,0 +1,308 @@
+---
+include:
+  - docassemble.MAVirtualCourt:basic-questions.yml
+---
+code: |
+  interview_short_title = "Ask the court for a Motion for Enlargement of Time to File Brief"
+---
+id: interview order
+mandatory: True
+code: |
+  basic_questions_intro_screen
+  info_screen
+  housing_court_division
+  housing_court_docket_number
+  appeals_court_docket_number
+  plaintiff_name
+  defendant_name
+  user_role
+  if not docketing_statement: 
+    docketing_warning
+  enlargement_choice 
+  deadline_request
+  previous_request_count
+  current_due_date
+  reason_additional_time
+  users[0].name.first
+  users[0].address.address
+  users[0].phone_number
+  date_of_completion
+  service_choice 
+  service_information 
+  service_date 
+  penalties_perjury_date
+  signature_choice
+  users[0].signature
+  exhibit_document 
+
+  download
+--- 
+id: info screen
+question: |
+  Motion for Enlargement of Time to File Brief
+subquestion: |
+  If for some reason you cannot meet the prescribed deadline in which to serve and file your brief and appendix, or a status report, you may file a motion with the Appeals Court asking for more time.
+  
+  The motion must set forth the reasons for the requested extension, provide a date certain by which the brief will be filed, and must be accompanied by a certificate of service which lists the name of the document being served, the date of service, the manner of service (e.g., first class mail, in hand service, or e-service through eFileMA.com), and the names and addresses of all parties being served.
+  
+  A copy of the motion must be served on all other parties to the appeal.
+continue button field: info_screen
+---
+id: department and division 
+question: | 
+  Please enter the trial court department and division in which your case was heard. 
+subquestion: |
+  Example: Suffolk Probate and Family Court 
+fields:
+  - Trial Court Department & Division: housing_court_division
+--- 
+id: trial court docket 
+question: | 
+  What is the trial court docket number for your case?
+fields:
+  - 'Docket number': housing_court_docket_number
+---
+id: appeals docket number 
+question: |
+  What is the Appeals Court docket number for your case?
+subquestion: |
+  If this is the first document that you are filing in the Appeals Court, your case has not yet been assigned a docket number, and you may leave this question blank.
+fields:
+  - 'Appeals Court docket number': appeals_court_docket_number
+    required: False
+---
+id: plaintiffs name
+question: |
+  Please list the plaintiff or plaintiffs in your trial court case 
+subquestion: |
+  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you may enter more than one name in the provided. space.
+fields: 
+  - 'Plaintiff(s) name': plaintiff_name
+---
+id: defendants names
+question: |
+  Please list all of the defendants in your trial court case
+subquestion: |
+  Include yourself, if you are a defendant.  If there are more than one defendants, you may enter more than one name in the provided space.
+fields: 
+  - 'Defendant(s) name': defendant_name
+---
+id: user role
+question: |
+  Are you an appellant or appellee ?
+subquestion: | 
+  An appellant is a party who is appealing regardless of their party designation in the trial court.
+  
+  An appellee is a party who is not appealing and intends to respond to the appellant's appeal.
+fields: 
+  - no label: user_role 
+    input type: radio 
+    choices: 
+      - Appellant: APPELLANT 
+      - Appellee: APPELLEE
+---
+question: |
+  Have you filed your docketing statement?
+yesno: docketing_statement
+---
+id: warning
+# event: docketing_warning
+question: |
+  The Appeals Court may not grant your requested enlargement if you do not file a required docketing statement prior to seeking an enlargement 
+subquestion: |
+  For further information, please proceed to the [Massachusetts Appeals Court Civil Court Docketing Statement Instructions](https://www.mass.gov/doc/civil-docketing-statement-updated-10-28-19/download).
+continue button field: docketing_warning
+---
+id: type of request
+question: |
+  Are you seeking an enlargement of time to file your principal brief and record appendix or your reply brief? 
+fields: 
+  - no label: enlargement_choice 
+    input type: radio 
+    choices: 
+    - Principal brief and record appendix: principal
+    - Reply brief: reply
+---
+id: date request 
+question: |
+  Please provide the specific date that you are asking your deadline be enlarged to
+fields:
+  - 'Deadline': deadline_request
+    datatype: date
+---
+id: 
+question: |
+  Date of signing
+fields:
+  - 'Date': penalties_perjury_date 
+    datatype: date
+---
+id: previous request count
+question: |
+  Please enter the number of previous requests that you have submitted to enlarge the deadline for filing this particular brief.
+fields: 
+  - 'Number of previous requests': previous_request_count
+    datatype: integer
+    min: 0
+    max: 99
+---
+id: current due date
+question: |
+  Please enter the current due date for your brief.
+fields:
+  - 'Current due date': current_due_date
+    datatype: date
+---
+id: describe reason for time 
+question: |
+  Please describe the reasons that you require additional time to file your brief.  
+subquestion: | 
+  If you are submitting an affidavit describing the grounds for your enlargement, you do not need to restate those reasons here and may simply enter: "See attached affidavit".  
+  
+  You do not need to disclose specific sensitive personal information in the motion or supporting materials. For example, if a medical condition has prevented you from working on the brief, you do not need to disclose the specific medical condition.  
+fields: 
+  - no label: reason_additional_time
+    input type: area
+---
+id: your name
+question:  |
+  What is your name?
+fields:
+  - First Name: users[0].name.first
+  - Middle Name: users[0].name.middle
+    required: False
+  - Last Name: users[0].name.last
+  - Suffix: users[0].name.suffix
+    code: |
+      name_suffix()
+    required: False  
+---
+id: your contact information
+question: |
+  What is your contact information?
+subquestion: |
+  The court needs to be able to reach you to schedule your hearing.
+  
+  Include at least **one** way to reach you other than by mail.
+fields:  
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Other ways to reach you: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email the court can use, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can rely on to tell you the court is
+      trying to reach you.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."))
+help: |
+  The court **must** be able to reach you. So you have to give them some way to do this.
+  
+  Some forms allow you to tell the court you need to keep your address, phone,
+  and email confidential, so that only court staff can see this information. 
+---
+id: date of completion 
+question: | 
+  Please select the date of completion of this motion
+fields: 
+  - Date: date_of_completion 
+    datatype: date
+---
+id: signature block 
+question: |
+  Name, physical address, email address, telephone number, date of completion
+--- 
+id: service 
+question: | 
+  You are required to provide a copy of this motion on the other party attorney  
+subquestion: |
+  If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.  You should not provide a copy of your affidavit of indigency, if any, to anyone except the Appeals Court.  Please select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s)'s attorney(s).
+field: service_choice 
+dropdown: 
+  - eFile and serve (efilema.com)
+  - Email
+  - Mail
+  - Hand delivery
+---
+id: 
+question: |
+  Please list the name and address or email address of each attorney or self-represented party that you have served or will serve with copies of your motion, memorandum and supporting materials.  If you are serving more than one attorney or party, you may list more than one in the space provided.
+fields: 
+  - no label: service_information 
+    input type: area
+---
+id: date of service 
+question: |
+  Please select the date on which you have made or will make service.
+fields: 
+  - Date: service_date 
+    datatype: date
+---
+id: persons signature
+generic object: Individual
+question: |
+  ${x}, sign under penalties of perjury
+signature: x.signature
+under: |
+  ${x}
+progress: 99  
+---
+id: signature choice
+decoration: file-signature
+question: |
+  Sign your court forms
+subquestion: |
+  Your forms are almost ready. You need to sign them first.
+  
+  Use the mouse or touchpad on your computer or
+  sign with your finger on your phone. 
+   
+  You can send the forms to someone else to sign if you choose the "phone" option.
+field: signature_choice
+buttons:  
+  - Sign on my phone: phone
+    image: mobile-alt
+  - Sign on this computer: this device
+    image: desktop
+continue button field: saw_signature_choice
+script: |
+  <script>
+    $(".da-field-buttons > div > .btn-da-custom").last().after("<br>")
+    $(".da-field-buttons > div > .btn-da-custom").first().before("<br>")
+  </script>
+--- 
+id: upload 
+question: |
+  Please upload any relevant documents in support of your request for relief, including any necessary affidavits.
+fields:
+  - Exhibits: exhibit_document  
+    datatype: file
+---
+id: download
+event: download
+question: |
+  Your forms are ready to download.
+subquestion: |
+  ${ combined_motion } 
+attachment code: combined_motion
+---
+code: |
+  combined_motion = pdf_concatenate(motion_attachment, exhibit_document, filename="motion_for_enlargement_of_time.pdf")
+---
+attachment:
+  - name: Motion for Enlargement of Time
+    variable name: motion_attachment
+    filename: Motion_for_Enlargement_of_Time
+    docx template file: Motion_for_Enlargement_of_Time.docx
+

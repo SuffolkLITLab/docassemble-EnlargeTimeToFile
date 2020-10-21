@@ -10,14 +10,14 @@ mandatory: True
 code: |
   basic_questions_intro_screen
   info_screen
-  housing_court_division
-  housing_court_docket_number
+  if not docketing_statement: 
+    docketing_warning
+  courts[0]
+  trial_court_docket_number
   appeals_court_docket_number
   plaintiff_name
   defendant_name
   user_role
-  if not docketing_statement: 
-    docketing_warning
   enlargement_choice 
   deadline_request
   previous_request_count
@@ -30,8 +30,8 @@ code: |
   service_choice 
   service_information 
   service_date 
-  penalties_perjury_date
   signature_choice
+  penalties_perjury_date
   users[0].signature
   exhibit_document 
 
@@ -50,21 +50,21 @@ continue button field: info_screen
 ---
 id: department and division 
 question: | 
-  Please enter the trial court department and division in which your case was heard. 
-subquestion: |
-  Example: Suffolk Probate and Family Court 
+  Enter the **trial court** department and division in which your case was heard 
 fields:
-  - Trial Court Department & Division: housing_court_division
+  - Trial Court: courts[0]
+    datatype: object
+    choices: macourts.filter_courts(["Housing Court"])
 --- 
 id: trial court docket 
 question: | 
-  What is the trial court docket number for your case?
+  What is the **trial court** docket number for your case?
 fields:
-  - 'Docket number': housing_court_docket_number
+  - 'Docket number': trial_court_docket_number
 ---
 id: appeals docket number 
 question: |
-  What is the Appeals Court docket number for your case?
+  What is the **appeals court** docket number for your case?
 subquestion: |
   If this is the first document that you are filing in the Appeals Court, your case has not yet been assigned a docket number, and you may leave this question blank.
 fields:
@@ -73,15 +73,15 @@ fields:
 ---
 id: plaintiffs name
 question: |
-  Please list the plaintiff or plaintiffs in your trial court case 
+  List the plaintiff or plaintiffs in your trial court case 
 subquestion: |
-  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you may enter more than one name in the provided. space.
+  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you may enter more than one name in the provided space. 
 fields: 
   - 'Plaintiff(s) name': plaintiff_name
 ---
 id: defendants names
 question: |
-  Please list all of the defendants in your trial court case
+  List all of the defendants in your trial court case
 subquestion: |
   Include yourself, if you are a defendant.  If there are more than one defendants, you may enter more than one name in the provided space.
 fields: 
@@ -101,6 +101,7 @@ fields:
       - Appellant: APPELLANT 
       - Appellee: APPELLEE
 ---
+id: docketing statement
 question: |
   Have you filed your docketing statement?
 yesno: docketing_statement
@@ -108,9 +109,12 @@ yesno: docketing_statement
 id: warning
 # event: docketing_warning
 question: |
-  The Appeals Court may not grant your requested enlargement if you do not file a required docketing statement prior to seeking an enlargement 
+  If you have not filed the docketing statement, the court can deny any motion to enlarge time to file a brief until the docketing statement is filed
 subquestion: |
-  For further information, please proceed to the [Massachusetts Appeals Court Civil Court Docketing Statement Instructions](https://www.mass.gov/doc/civil-docketing-statement-updated-10-28-19/download).
+  Each appellant or cross-appellant, other than a self-represented litigant who is incarcerated, is required to submit the attached docketing statement within fourteen days of issuance of the notice of entry of the appeal
+  
+  Access the Docketing Statement for [civil cases](https://www.mass.gov/doc/civil-docketing-statement-updated-10-28-19/download)  and  [criminal](https://www.mass.gov/doc/criminal-docketing-statement-updated-10-28-19/download) 
+
 continue button field: docketing_warning
 ---
 id: type of request
@@ -125,21 +129,24 @@ fields:
 ---
 id: date request 
 question: |
-  Please provide the specific date that you are asking your deadline be enlarged to
+  Provide the specific date that you are asking your deadline be enlarged to
 fields:
   - 'Deadline': deadline_request
     datatype: date
 ---
-id: 
+id: signature date  
 question: |
-  Date of signing
+  When are you going to file this form?
+subquestion: |
+  We automatically answer “today” for you, below. You can change the date. 
 fields:
   - 'Date': penalties_perjury_date 
     datatype: date
+    default: ${today().format("yyyy-MM-dd")}
 ---
 id: previous request count
 question: |
-  Please enter the number of previous requests that you have submitted to enlarge the deadline for filing this particular brief.
+  Enter the number of previous requests that you have submitted to enlarge the deadline for filing this particular brief.
 fields: 
   - 'Number of previous requests': previous_request_count
     datatype: integer
@@ -148,18 +155,20 @@ fields:
 ---
 id: current due date
 question: |
-  Please enter the current due date for your brief.
+  Enter the current due date for your brief
 fields:
   - 'Current due date': current_due_date
     datatype: date
 ---
 id: describe reason for time 
 question: |
-  Please describe the reasons that you require additional time to file your brief.  
+  Describe the reasons that you require additional time to file your brief 
 subquestion: | 
   If you are submitting an affidavit describing the grounds for your enlargement, you do not need to restate those reasons here and may simply enter: "See attached affidavit".  
   
   You do not need to disclose specific sensitive personal information in the motion or supporting materials. For example, if a medical condition has prevented you from working on the brief, you do not need to disclose the specific medical condition.  
+
+  Enlargements of time will ordinarily not be granted absent genuine emergency, such as a death, illness, or serious injury
 fields: 
   - no label: reason_additional_time
     input type: area
@@ -214,7 +223,7 @@ help: |
 ---
 id: date of completion 
 question: | 
-  Please select the date of completion of this motion
+  Select the date of completion of **this motion**
 fields: 
   - Date: date_of_completion 
     datatype: date
@@ -224,10 +233,10 @@ question: |
   Name, physical address, email address, telephone number, date of completion
 --- 
 id: service 
-question: | 
-  You are required to provide a copy of this motion on the other party attorney  
+question: |
+  Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
-  If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.  You should not provide a copy of your affidavit of indigency, if any, to anyone except the Appeals Court.  Please select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s)'s attorney(s).
+  If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.  You should not provide a copy of your affidavit of indigency, if any, to anyone except the Appeals Court.
 field: service_choice 
 dropdown: 
   - eFile and serve (efilema.com)
@@ -235,16 +244,18 @@ dropdown:
   - Mail
   - Hand delivery
 ---
-id: 
+id: name and address for service 
 question: |
-  Please list the name and address or email address of each attorney or self-represented party that you have served or will serve with copies of your motion, memorandum and supporting materials.  If you are serving more than one attorney or party, you may list more than one in the space provided.
+  List the name and address or email address of each attorney or self-represented party that you have served or will serve with copies of your motion, memorandum and supporting materials
+subquestion: | 
+   If you are serving more than one attorney or party, you may list more than one in the space provided
 fields: 
   - no label: service_information 
     input type: area
 ---
 id: date of service 
 question: |
-  Please select the date on which you have made or will make service.
+  Select the date on which you have made or will make service
 fields: 
   - Date: service_date 
     datatype: date
@@ -252,7 +263,7 @@ fields:
 id: persons signature
 generic object: Individual
 question: |
-  ${x}, sign under penalties of perjury
+  ${x}, sign under the penalties of perjury
 signature: x.signature
 under: |
   ${x}
@@ -284,9 +295,9 @@ script: |
 --- 
 id: upload 
 question: |
-  Please upload any relevant documents in support of your request for relief, including any necessary affidavits.
+  Upload any relevant documents in support of your request for relief, including any necessary affidavits.
 fields:
-  - Exhibits: exhibit_document  
+  - no label: exhibit_document  
     datatype: file
 ---
 id: download

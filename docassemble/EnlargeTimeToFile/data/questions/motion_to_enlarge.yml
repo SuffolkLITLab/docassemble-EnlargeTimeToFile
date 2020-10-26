@@ -10,14 +10,14 @@ mandatory: True
 code: |
   basic_questions_intro_screen
   info_screen
-  if not docketing_statement: 
-    docketing_warning
   courts[0]
   trial_court_docket_number
   appeals_court_docket_number
   plaintiff_name
   defendant_name
-  user_role
+  if user_role== 'APPELLANT':
+    if not docketing_statement: 
+       docketing_warning
   enlargement_choice 
   deadline_request
   previous_request_count
@@ -29,12 +29,12 @@ code: |
   date_of_completion
   service_choice 
   service_information 
+  preview_screen
   service_date 
   signature_choice
   penalties_perjury_date
-  users[0].signature
   exhibit_document 
-
+  users[0].signature
   download
 --- 
 id: info screen
@@ -308,12 +308,32 @@ subquestion: |
   ${ combined_motion } 
 attachment code: combined_motion
 ---
-code: |
-  combined_motion = pdf_concatenate(motion_attachment, exhibit_document, filename="motion_for_enlargement_of_time.pdf")
+id: preview
+need: form_to_sign
+continue button field: preview_screen
+question: |
+  Nearly finished
+subquestion: |
+  You are almost done. Click on the form below. It will open in a new window so you can review it and make sure it is correct.
+  
+  Do not forget to come back to this page to click to the final step of signing and sending the form to the court. 
+  
+   ${ form_to_sign }
+progress: 95
+attachment code: motion_attachment["preview"]
 ---
+code: |
+  combined_motion = pdf_concatenate(motion_attachment["final"], exhibit_document, filename="motion_for_enlargement_of_time.pdf")
+---
+code: | 
+  form_to_sign = pdf_concatenate(motion_attachment["preview"], exhibit_document, filename="motion_for_enlargement_of_time.pdf")
+---
+objects:
+  - motion_attachment: DADict
+---
+id: final attachment
 attachment:
   - name: Motion for Enlargement of Time
-    variable name: motion_attachment
+    variable name: motion_attachment[i]
     filename: Motion_for_Enlargement_of_Time
     docx template file: Motion_for_Enlargement_of_Time.docx
-

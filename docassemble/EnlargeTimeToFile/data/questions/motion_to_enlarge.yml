@@ -27,11 +27,9 @@ code: |
   users[0].name.first
   users[0].address.address
   users[0].phone_number
-  date_of_completion
   service_choice 
   service_information 
   service_date 
-  penalties_perjury_date
   exhibit_document 
   preview_screen
   signature_choice
@@ -66,8 +64,6 @@ continue button field: info_screen
 id: appeals docket number 
 question: |
   What is the **Appeals Court** docket number for your case?
-subquestion: |
-  If this is the first document that you are filing in the Appeals Court, your case has not yet been assigned a docket number, and you may leave this question blank.
 fields:
   - 'Appeals Court docket number': appeals_court_docket_number
 ---
@@ -75,15 +71,15 @@ id: plaintiffs name
 question: |
   List the plaintiff or plaintiffs in your trial court case 
 subquestion: |
-  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you may enter more than one name in the provided space. 
+  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you can enter more than one name.
 fields: 
   - 'Plaintiff(s) name': plaintiff_name
 ---
 id: defendants names
 question: |
-  List all of the defendants in your trial court case
+  List all of the defendant or defendants in your trial court case
 subquestion: |
-  Include yourself, if you are a defendant.  If there are more than one defendants, you may enter more than one name in the provided space.
+  Include yourself, if you are a defendant.  If there are more than one defendants, you can enter more than one name.
 fields: 
   - 'Defendant(s) name': defendant_name
 ---
@@ -108,6 +104,11 @@ subquestion: |
   Each appellant or cross-appellant, other than a self-represented litigant who is incarcerated, is required to submit the  docketing statement within fourteen days of issuance of the notice of entry of the appeal. 
 yesno: docketing_statement
 ---
+id: neutralize
+code: | 
+  if user_role == 'APPELLEE':
+    docketing_statement == False 
+---
 id: warning
 event: docketing_warning
 question: |
@@ -131,28 +132,26 @@ fields:
     - 'Principal brief and record appendix': principal
     - 'Reply brief': reply
 ---
-#id: neutralize appelle choice
-#code: |
-#  if user_role == "APPELLEE" 
-#   enlargement_choice = "principal"
----
 id: date request 
 question: |
   Provide the date that you are **asking your deadline be extended to**
 subquestion: |
-  The enlargement sought should not exceed 120 days from your current due date, ${ current_due_date }. 
+  The enlargement sought should not exceed ${ current_due_date.plus(days=120) }, 120 days from your current due date. 
 fields:
   - Requested deadline: deadline_request
     datatype: date
+    min: ${ current_due_date.today() } 
     max: ${ current_due_date.plus(days=120) } 
-help: 
-  label: Check for state holdiays
-  heading: Check for state holdiays
-  content: |
-    If a legal holiday falls on a Saturday, all offices under the jurisdiction of any department of state government will be open to the public for business on the Friday immediately before any Saturday holiday. 
-    If a legal holiday falls on a Sunday, the holiday will be observed on the following Monday. 
-    [Massachusetts Legal Holidays](https://www.sec.state.ma.us/cis/cishol/holidx.htm)
-    [Trial Court legal holidays](https://www.mass.gov/service-details/trial-court-legal-holidays)
+#help: 
+#  label: Check for state holdiays
+#  heading: Check for state holdiays
+#  content: |
+#    If a legal holiday falls on a Saturday, all offices under the jurisdiction of any department of state government will be open to the public for business on the Friday immediately before any Saturday holiday. 
+#    If a legal holiday falls on a Sunday, the holiday will be observed on the following Monday. 
+#    
+#    [Massachusetts Legal Holidays](https://www.sec.state.ma.us/cis/cishol/holidx.htm)
+#    
+#    [Trial Court legal holidays](https://www.mass.gov/service-details/trial-court-legal-holidays)
 ---
 id: signature date  
 question: |
@@ -170,6 +169,7 @@ question: |
 fields: 
   - 'Number of previous requests': previous_request_count
     datatype: integer
+    default: 0
     min: 0
     max: 99
 ---
@@ -245,13 +245,7 @@ help: |
   
   Some forms allow you to tell the court you need to keep your address, phone,
   and email confidential, so that only court staff can see this information. 
----
-id: date of completion 
-question: | 
-  Select the date of completion of **this motion**
-fields: 
-  - Date: date_of_completion 
-    datatype: date
+
 ---
 id: signature block 
 question: |
@@ -360,5 +354,4 @@ subquestion: |
    ${ form_to_sign }
 progress: 95
 attachment code: motion_attachment["preview"]
-
 

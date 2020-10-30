@@ -8,33 +8,33 @@ code: |
 id: interview order
 mandatory: True
 code: |
-  basic_questions_intro_screen
+  appeals_basic_questions_intro_screen
   info_screen
-  if not docketing_statement: 
-    docketing_warning
-  courts[0]
-  trial_court_docket_number
+  #trial_court_docket_number
   appeals_court_docket_number
   plaintiff_name
   defendant_name
-  user_role
-  enlargement_choice 
+  if user_role == 'APPELLANT':
+    if not docketing_statement: 
+       docketing_warning
+  if user_role == 'APPELLANT':
+    enlargement_choice  
+  current_due_date
   deadline_request
   previous_request_count
-  current_due_date
   reason_additional_time
+  display_reason
   users[0].name.first
   users[0].address.address
   users[0].phone_number
-  date_of_completion
   service_choice 
   service_information 
-  service_date 
-  signature_choice
-  penalties_perjury_date
+  service_date  
+  if has_evidence_ready_to_upload:
+    review_exhibits
+  preview_screen
+  basic_questions_signature_flow
   users[0].signature
-  exhibit_document 
-
   download
 --- 
 id: info screen
@@ -48,42 +48,39 @@ subquestion: |
   A copy of the motion must be served on all other parties to the appeal.
 continue button field: info_screen
 ---
-id: department and division 
-question: | 
-  Enter the **trial court** department and division in which your case was heard 
-fields:
-  - Trial Court: courts[0]
-    datatype: object
-    choices: macourts.filter_courts(["Housing Court"])
+#id: department and division 
+#question: | 
+#  Enter the **trial court** department and division in which your case was heard 
+#fields:
+#  - Trial Court: courts[0]
+#    datatype: object
+#    choices: macourts.filter_courts(["appeals_court"])
 --- 
-id: trial court docket 
-question: | 
-  What is the **trial court** docket number for your case?
-fields:
-  - 'Docket number': trial_court_docket_number
+# id: trial court docket 
+# question: | 
+#   What is the **trial court** docket number for your case?
+# fields:
+#   - 'Docket number': trial_court_docket_number
 ---
 id: appeals docket number 
 question: |
-  What is the **appeals court** docket number for your case?
-subquestion: |
-  If this is the first document that you are filing in the Appeals Court, your case has not yet been assigned a docket number, and you may leave this question blank.
+  What is the **Appeals Court** docket number for your case?
 fields:
   - 'Appeals Court docket number': appeals_court_docket_number
-    required: False
 ---
 id: plaintiffs name
 question: |
   List the plaintiff or plaintiffs in your trial court case 
 subquestion: |
-  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you may enter more than one name in the provided space. 
+  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you can enter more than one name.
 fields: 
   - 'Plaintiff(s) name': plaintiff_name
 ---
 id: defendants names
 question: |
-  List all of the defendants in your trial court case
+  List all of the defendant or defendants in your trial court case
 subquestion: |
-  Include yourself, if you are a defendant.  If there are more than one defendants, you may enter more than one name in the provided space.
+  Include yourself, if you are a defendant.  If there are more than one defendants, you can enter more than one name.
 fields: 
   - 'Defendant(s) name': defendant_name
 ---
@@ -104,18 +101,22 @@ fields:
 id: docketing statement
 question: |
   Have you filed your docketing statement?
+subquestion: | 
+  Each appellant or cross-appellant, other than a self-represented litigant who is incarcerated, is required to submit the  docketing statement within fourteen days of issuance of the notice of entry of the appeal. 
 yesno: docketing_statement
 ---
 id: warning
-# event: docketing_warning
+event: docketing_warning
 question: |
   If you have not filed the docketing statement, the court can deny any motion to enlarge time to file a brief until the docketing statement is filed
 subquestion: |
   Each appellant or cross-appellant, other than a self-represented litigant who is incarcerated, is required to submit the attached docketing statement within fourteen days of issuance of the notice of entry of the appeal
   
   Access the Docketing Statement for [civil cases](https://www.mass.gov/doc/civil-docketing-statement-updated-10-28-19/download)  and  [criminal](https://www.mass.gov/doc/criminal-docketing-statement-updated-10-28-19/download) 
-
-continue button field: docketing_warning
+buttons:
+  - Exit: exit
+    url: https://massaccess.suffolklitlab.org/
+  - Restart: restart
 ---
 id: type of request
 question: |
@@ -124,15 +125,29 @@ fields:
   - no label: enlargement_choice 
     input type: radio 
     choices: 
-    - Principal brief and record appendix: principal
-    - Reply brief: reply
+    - 'Principal brief and record appendix': principal
+    - 'Reply brief': reply
 ---
 id: date request 
 question: |
-  Provide the specific date that you are asking your deadline be enlarged to
+  Provide the date that you are **asking your deadline be extended to**
+subquestion: |
+  The enlargement sought should not exceed ${ current_due_date.plus(days=120) }, 120 days from your current due date. 
 fields:
-  - 'Deadline': deadline_request
+  - Requested deadline: deadline_request
     datatype: date
+    min: ${ current_due_date.today() } 
+    max: ${ current_due_date.plus(days=120) } 
+#help: 
+#  label: Check for state holdiays
+#  heading: Check for state holdiays
+#  content: |
+#    If a legal holiday falls on a Saturday, all offices under the jurisdiction of any department of state government will be open to the public for business on the Friday immediately before any Saturday holiday. 
+#    If a legal holiday falls on a Sunday, the holiday will be observed on the following Monday. 
+#    
+#    [Massachusetts Legal Holidays](https://www.sec.state.ma.us/cis/cishol/holidx.htm)
+#    
+#    [Trial Court legal holidays](https://www.mass.gov/service-details/trial-court-legal-holidays)
 ---
 id: signature date  
 question: |
@@ -142,20 +157,21 @@ subquestion: |
 fields:
   - 'Date': penalties_perjury_date 
     datatype: date
-    default: ${today().format("yyyy-MM-dd")}
+    default: ${today().format("MM-dd-yyyy")}
 ---
 id: previous request count
 question: |
-  Enter the number of previous requests that you have submitted to enlarge the deadline for filing this particular brief.
+  Enter the number of previous requests that you have submitted to enlarge the deadline for filing **this particular brief**
 fields: 
   - 'Number of previous requests': previous_request_count
     datatype: integer
+    default: 0
     min: 0
     max: 99
 ---
 id: current due date
 question: |
-  Enter the current due date for your brief
+  Enter the **current due date** for your brief
 fields:
   - 'Current due date': current_due_date
     datatype: date
@@ -163,15 +179,37 @@ fields:
 id: describe reason for time 
 question: |
   Describe the reasons that you require additional time to file your brief 
-subquestion: | 
-  If you are submitting an affidavit describing the grounds for your enlargement, you do not need to restate those reasons here and may simply enter: "See attached affidavit".  
-  
-  You do not need to disclose specific sensitive personal information in the motion or supporting materials. For example, if a medical condition has prevented you from working on the brief, you do not need to disclose the specific medical condition.  
-
-  Enlargements of time will ordinarily not be granted absent genuine emergency, such as a death, illness, or serious injury
 fields: 
   - no label: reason_additional_time
-    input type: area
+    datatype: checkboxes
+    choices:
+      - I am sick or had a medical emergency: I am sick or had a medical issue
+      - Someone close to me was sick or has died : Someone close to me was sick or has died
+      - I have a childcare issue: I have a childcare issue
+      - I have a calendaring issue : I have a calendaring issue
+      - I need more time to work on my brief: I need more time to work on my brief
+    none of the above: False
+    required: False
+  - Other: has_other_reason
+    datatype: yesnowide
+  - Other Reason: other_reason_for_extension
+    input type: area 
+    show if: has_other_reason    
+#validation code: |
+#  if(not showifdef('I am sick or had a medical emergency') and \
+#     (not showifdef('Someone close to me was sick or has died')) and \
+#     (not showifdef('I have a childcare issue')) and \
+#     (not showifdef('I have a calendaring issue')) and \
+#     (not showifdef('I need more time to work on my brief')) and \
+#     (not showifdef('Other Reason'))):
+#    validation_error(word("You need to provide at least one reason you require additional time to file your brief."))
+---
+id: show user description
+field: display_reason 
+question: | 
+  Here is what you've told the court about why you need more time.  
+subquestion: |
+  ${ (reason_additional_time).true_values() } ${ showifdef('other_reason_for_extension') }
 ---
 id: your name
 question:  |
@@ -190,7 +228,7 @@ id: your contact information
 question: |
   What is your contact information?
 subquestion: |
-  The court needs to be able to reach you to schedule your hearing.
+  The court needs to be able to reach you.
   
   Include at least **one** way to reach you other than by mail.
 fields:  
@@ -220,13 +258,7 @@ help: |
   
   Some forms allow you to tell the court you need to keep your address, phone,
   and email confidential, so that only court staff can see this information. 
----
-id: date of completion 
-question: | 
-  Select the date of completion of **this motion**
-fields: 
-  - Date: date_of_completion 
-    datatype: date
+
 ---
 id: signature block 
 question: |
@@ -236,13 +268,13 @@ id: service
 question: |
   Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
-  If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.  You should not provide a copy of your affidavit of indigency, if any, to anyone except the Appeals Court.
+  If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.
 field: service_choice 
 dropdown: 
-  - eFile and serve (efilema.com)
-  - Email
-  - Mail
-  - Hand delivery
+  - eFile and serve (efilema.com): eFile and servie (efilema.com)
+  - Email: email
+  - Mail: mail
+  - Hand delivery: hand delivery
 ---
 id: name and address for service 
 question: |
@@ -293,27 +325,216 @@ script: |
     $(".da-field-buttons > div > .btn-da-custom").first().before("<br>")
   </script>
 --- 
-id: upload 
-question: |
-  Upload any relevant documents in support of your request for relief, including any necessary affidavits.
-fields:
-  - no label: exhibit_document  
-    datatype: file
+#id: upload 
+#question: |
+#  Upload any relevant documents in support of your request for relief, including any necessary affidavits
+#subquestion: |
+#  It is not required that you provide any additional documents
+#fields:
+#  - no label: exhibit_document  
+#    datatype: file
+#    required: False
 ---
-id: download
-event: download
-question: |
-  Your forms are ready to download.
-subquestion: |
-  ${ combined_motion } 
-attachment code: combined_motion
+#id: download
+#event: download
+#question: |
+#  Your forms are ready to download.
+#subquestion: |
+#  ${ motion_attachment["final"] } 
+#attachment code: motion_attachment["final"]
 ---
-code: |
-  combined_motion = pdf_concatenate(motion_attachment, exhibit_document, filename="motion_for_enlargement_of_time.pdf")
+code: | 
+  form_to_sign = motion_attachment["preview"]
 ---
+objects:
+  - motion_attachment: DADict
+---
+id: final attachment
 attachment:
   - name: Motion for Enlargement of Time
-    variable name: motion_attachment
+    variable name: motion_attachment[i]
     filename: Motion_for_Enlargement_of_Time
     docx template file: Motion_for_Enlargement_of_Time.docx
-
+---
+id: review before signature
+need: form_to_sign
+continue button field: preview_screen
+question: |
+  Nearly finished
+subquestion: |
+  You are almost done! Please click on the form below. It will open in a new window so you can review it and make sure it is correct.
+  
+  Don't forget to come back to this page to click to the final step of signing and sending the form to the court. 
+  
+   ${ form_to_sign }
+progress: 95
+attachment code: motion_attachment["preview"]
+---
+id: download form
+event: download
+decoration: file-download
+question: |
+  % if not defined('email_success') or not email_success:
+  Review, Download, and Send Form
+  % else:
+  Form delivered
+  % endif
+subquestion: |
+  % if not defined('email_success') or not email_success:
+  Thank you ${users[0]}. Your form is ready to send to the court. **It is not
+  delivered until you complete the delivery process below.**
+  1. Click the preview image below to open the form in a new window. Correct any errors using the "Make changes" button below.
+  1. Download and save or print a copy of this form for your 
+  records.
+  1. Click the "Submit to ${courts[0]}" button to send it to the court. 
+  1. You will have a chance to add instructions to the clerk and see the cover page before final delivery.
+  % else:
+  If you do not hear from the court in 1 business day, call the   Appeals Court Clerk's Office: 617-921-4443 
+  
+  The Appeals Court Clerk's Office is open:  
+  Monday - Friday  
+  8:30am - 4:30pm
+  % endif
+  
+  ${ form_to_file_no_cover }  
+  
+  ${action_button_html(url_action('review_all_sections'), icon='edit', label=word("Make changes"))}
+  
+  % if not defined('email_success') or not email_success:
+    ${ action_button_html( url_action('form_delivery_complete'), id_tag="submitToCourt", label="Submit to " + str(courts[0].name), icon=send_icon, size="md", color="primary")}
+    
+  Or download/email below:
+  % else:
+    Your email has already been delivered to ${courts[0]}
+  % for file in final_form_to_file:
+  [:file-download: ${ file.info.get("filename") }](${file.url_for()})
+  % endfor 
+  % endif
+progress: 100
+section: download
+attachment code: motion_attachment["final"]
+---
+need:
+  - comments_to_clerk
+  - package_version_number
+id: ready to email
+question: |
+  Final Review With Cover Page
+subquestion: |
+  
+  Below is your ${comma_and_list(download_titles)} document with the 
+  cover page that we will deliver to ${courts[0]}.
+  
+  Click "Back" if you need to make any changes.  
+  Click "Send to court" to deliver it.
+  
+  Here is what the clerk at ${courts} will get:
+  % for file in final_form_to_file:
+  ${ file }  
+  [:file-download: ${ file.info.get("filename") }](${file.url_for()})  
+  % endfor 
+  
+  % if found_email:
+  We will deliver it securely. Please allow up to 15 minutes for the email to
+  arrive.
+  % else:
+  There was a problem delivering this to the ${courts[0]}. We couldn't
+  locate the contact information for this court.
+  % endif
+ 
+  Press below to deliver the form.
+fields:
+  - Send me a copy: should_cc_user
+    datatype: yesno
+  - Email address: cc_email
+    datatype: email
+    show if: should_cc_user
+    default: ${users[0].email if defined('users[0].email') else ''}
+continue button field: ready_to_email
+continue button label: Send to court
+---
+objects:
+  - exhibits: DAFileList.using(auto_gather=False, gathered=True)
+---
+id: record appendix
+question: |
+  Would you like to provide documents in support of your request for an extension of time to file your brief? 
+subquestion: |
+  You do not need to disclose specific sensitive personal information in supporting materials. For example, if a medical condition has prevented you from working on the brief, you do not need to provide medical records.  
+fields:
+  - Do you have any documents to share with the judge?: has_evidence
+    datatype: yesnoradio
+  - Are you ready to take a photo or upload them now?: has_evidence_ready_to_upload
+    datatype: yesnoradio
+    show if: has_evidence
+  - note: |
+      Okay. It is not required that you provide proof. Tap next. 
+    show if: 
+      variable: has_evidence_ready_to_upload      
+      is: False
+  - note: |
+      Take a picture of each document you want to upload, or get the files ready to
+      upload on your computer or phone.
+      
+      When you're ready, use the upload area below.
+    show if: has_evidence_ready_to_upload
+  - Tap "browse" and choose all of the photos you want to upload at once. You can edit or add additional documents on the next screen.: exhibits
+    datatype: files
+    show if: has_evidence_ready_to_upload
+    accept: |
+      "image/*, image/png,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"
+---
+table: exhibits.table
+rows: exhibits
+allow reordering: True
+columns:
+  - File name: showifdef(row_item.attr_name('filename'))
+  - Thumbnail: row_item.show(width="100px")  
+delete buttons: True
+---
+id: add additional document
+question: |
+  Exhibit document ${i+1}  
+fields:
+  - no label: exhibits[i]
+    datatype: file
+    accept: |
+      "image/*, image/png,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"   
+validation code: |
+  # Upload field creates a DAFileList
+  # We want it to be a plain DAFile instead
+  if isinstance(exhibits[i], DAFileList):
+    temp_name = exhibits[i].instanceName
+    exhibits[i] = next(iter(exhibits[i]))
+    # Make sure the "instanceName" shows the correct position in the list,
+    # instead of showing a nested DAFileList's instanceName
+    exhibits[i].instanceName = temp_name
+---
+id: review exhibits
+question: |
+  Review your exhibits
+subquestion: |
+  Look at the exhibits below. If you want to change the order, use the arrows
+  to move an exhibit up or down in the list. Click "delete" or "add another"
+  to change which exhibits you send to the court.
+  
+  ${ exhibits.table }
+  
+  ${exhibits.add_action() }
+continue button field: review_exhibits
+---
+code: |
+  if has_evidence_ready_to_upload:
+    combined_motion = pdf_concatenate(motion_attachment["final"], exhibits, filename="motion_for_enlargement_of_time.pdf")
+  else:
+    combined_motion = motion_attachment["final"]
+---
+code: |
+  if has_evidence_ready_to_upload:
+    form_to_sign = pdf_concatenate(motion_attachment["preview"], exhibits, filename="motion_for_enlargement_of_time.pdf")
+  else:
+    form_to_sign = pdf_concatenate(motion_attachment["preview"], filename="motion_for_enlargement_of_time.pdf")
+---
+code: |
+  form_to_file_no_cover = combined_motion
+---

@@ -29,23 +29,27 @@ code: |
   users[0].phone_number
   service_choice 
   service_information 
-  service_date  
+  service_date 
   if has_evidence_ready_to_upload:
     review_exhibits
   preview_screen
   basic_questions_signature_flow
   users[0].signature
   download
---- 
+---
 id: info screen
 question: |
-  Motion for Enlargement of Time to File Brief
+  Motion for Enlargement of Time to File a Brief
 subquestion: |
-  If for some reason you cannot meet the prescribed deadline in which to serve and file your brief and appendix, or a status report, you may file a motion with the Appeals Court asking for more time.
+  If for some reason you cannot meet the current due date to serve and file your brief you may file a Motion for Enlargement of Time to FIle a Brief with the Appeals Court asking for more time.
   
-  The motion must set forth the reasons for the requested extension, provide a date certain by which the brief will be filed, and must be accompanied by a certificate of service which lists the name of the document being served, the date of service, the manner of service (e.g., first class mail, in hand service, or e-service through eFileMA.com), and the names and addresses of all parties being served.
+  This interview will help you tell the court:
   
-  A copy of the motion must be served on all other parties to the appeal.
+  * the reason you need to ask for more time,
+  * the date by which you are able to file your brief by, within the court guidelines, and
+  * create a complete certificate of service.
+  
+  A copy of the motion must be served on all other parties to the appeal
 continue button field: info_screen
 ---
 #id: department and division 
@@ -207,9 +211,11 @@ fields:
 id: show user description
 field: display_reason 
 question: | 
-  Here is what you've told the court about why you need more time.  
+  Here is what you've told the court about why you need more time:
 subquestion: |
-  ${ (reason_additional_time).true_values() } ${ showifdef('other_reason_for_extension') }
+  ${ (reason_additional_time).true_values() } ${ showifdef('other_reason_for_extension') }.
+  
+  **If you would like to edit this tap the Back button.** 
 ---
 id: your name
 question:  |
@@ -462,13 +468,10 @@ question: |
 subquestion: |
   You do not need to disclose specific sensitive personal information in supporting materials. For example, if a medical condition has prevented you from working on the brief, you do not need to provide medical records.  
 fields:
-  - Do you have any documents to share with the judge?: has_evidence
+  - Do you have any documents to share with the judge?: has_evidence_ready_to_upload
     datatype: yesnoradio
-  - Are you ready to take a photo or upload them now?: has_evidence_ready_to_upload
-    datatype: yesnoradio
-    show if: has_evidence
   - note: |
-      Okay. It is not required that you provide proof. Tap next. 
+     That is okay. It is not required that you provide proof. Tap next. 
     show if: 
       variable: has_evidence_ready_to_upload      
       is: False
@@ -537,4 +540,3 @@ code: |
 ---
 code: |
   form_to_file_no_cover = combined_motion
----

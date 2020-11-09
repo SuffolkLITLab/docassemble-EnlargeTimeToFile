@@ -78,7 +78,7 @@ question: |
 subquestion: |
   Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you can enter more than one name.
 fields: 
-  - 'Plaintiff(s) name': plaintiff_name
+  - 'Plaintiff(s) name(s)': plaintiff_name
 ---
 id: defendants names
 question: |
@@ -86,7 +86,7 @@ question: |
 subquestion: |
   Include yourself, if you are a defendant.  If there are more than one defendants, you can enter more than one name.
 fields: 
-  - 'Defendant(s) name': defendant_name
+  - 'Defendant(s) name(s)': defendant_name
 ---
 id: user role
 question: |

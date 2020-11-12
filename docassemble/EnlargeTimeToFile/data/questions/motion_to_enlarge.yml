@@ -5,11 +5,15 @@ include:
 code: |
   interview_short_title = "Ask the court for a Motion for Enlargement of Time to File Brief"
 ---
+code: |
+  courts[0] = macourts.matching_appeals_court("")
+---
 id: interview order
 mandatory: True
 code: |
   appeals_basic_questions_intro_screen
   info_screen
+  users.there_is_another = False
   #trial_court_docket_number
   appeals_court_docket_number
   plaintiff_name
@@ -23,15 +27,14 @@ code: |
   deadline_request
   previous_request_count
   reason_additional_time
-  display_reason
+  edited_explination 
   users[0].name.first
   users[0].address.address
   users[0].phone_number
   service_choice 
   service_information 
   service_date 
-  if has_evidence_ready_to_upload:
-    review_exhibits
+  has_evidence_ready_to_upload
   preview_screen
   basic_questions_signature_flow
   users[0].signature
@@ -41,7 +44,7 @@ id: info screen
 question: |
   Motion for Enlargement of Time to File a Brief
 subquestion: |
-  If for some reason you cannot meet the current due date to serve and file your brief you may file a Motion for Enlargement of Time to FIle a Brief with the Appeals Court asking for more time.
+  If for some reason you cannot meet the current due date to serve and file your brief you may file a Motion for Enlargement of Time to File a Brief with the Appeals Court asking for more time.
   
   This interview will help you tell the court:
   
@@ -76,7 +79,7 @@ id: plaintiffs name
 question: |
   List the plaintiff or plaintiffs in your trial court case 
 subquestion: |
-  Include yourself, if you are a plaintiff. If there are more than one plaintiffs, you can enter more than one name.
+  Include yourself, if you are a plaintiff. If there is more than one plaintiff, you can enter more than one name.
 fields: 
   - 'Plaintiff(s) name(s)': plaintiff_name
 ---
@@ -84,7 +87,7 @@ id: defendants names
 question: |
   List all of the defendant or defendants in your trial court case
 subquestion: |
-  Include yourself, if you are a defendant.  If there are more than one defendants, you can enter more than one name.
+  Include yourself, if you are a defendant.  If there is more than one defendant, you can enter more than one name.
 fields: 
   - 'Defendant(s) name(s)': defendant_name
 ---
@@ -92,9 +95,10 @@ id: user role
 question: |
   Are you an appellant or appellee ?
 subquestion: | 
-  An appellant is a party who is appealing regardless of their party designation in the trial court.
+  An appellant is a party who is asks a higher court to review the decision of the lower court, regardless of their party designation in the trial court.
   
-  An appellee is a party who is not appealing and intends to respond to the appellant's appeal.
+  An appellee is a party who is not appealing and intends to respond to the appellant's request for a review of the lower court's decision, regardless of their party designation in the trial court.
+  
 fields: 
   - no label: user_role 
     input type: radio 
@@ -136,12 +140,13 @@ id: date request
 question: |
   Provide the date that you are **asking your deadline be extended to**
 subquestion: |
-  The enlargement sought should not exceed ${ current_due_date.plus(days=120) }, 120 days from your current due date. 
+  Your requested extension should not exceed ${ current_due_date.plus(days=120) }, 120 days from your current due date. 
 fields:
   - Requested deadline: deadline_request
     datatype: date
     min: ${ current_due_date.today() } 
-    max: ${ current_due_date.plus(days=120) } 
+    max: ${ current_due_date.plus(days=120) }
+    
 #help: 
 #  label: Check for state holdiays
 #  heading: Check for state holdiays
@@ -183,6 +188,8 @@ fields:
 id: describe reason for time 
 question: |
   Describe the reasons that you require additional time to file your brief 
+subquestion: |
+  You will have a chance to give more detail on the next screen
 fields: 
   - no label: reason_additional_time
     datatype: checkboxes
@@ -196,26 +203,21 @@ fields:
     required: False
   - Other: has_other_reason
     datatype: yesnowide
-  - Other Reason: other_reason_for_extension
-    input type: area 
-    show if: has_other_reason    
-#validation code: |
-#  if(not showifdef('I am sick or had a medical emergency') and \
-#     (not showifdef('Someone close to me was sick or has died')) and \
-#     (not showifdef('I have a childcare issue')) and \
-#     (not showifdef('I have a calendaring issue')) and \
-#     (not showifdef('I need more time to work on my brief')) and \
-#     (not showifdef('Other Reason'))):
-#    validation_error(word("You need to provide at least one reason you require additional time to file your brief."))
+  - Other: other_reason_for_extension
+    show if: has_other_reason 
+    
 ---
 id: show user description
-field: display_reason 
+reconsider: True
 question: | 
-  Here is what you've told the court about why you need more time:
+  Here is what you have told the court about why you need more time
 subquestion: |
-  ${ (reason_additional_time).true_values() } ${ showifdef('other_reason_for_extension') }.
-  
-  **If you would like to edit this tap the Back button.** 
+  You may add more detail or make changes below. It is not required. 
+fields:
+  - no label: edited_explination 
+    input type: area
+    default: |
+      ${ (reason_additional_time).true_values() } .  ${ showifdef('other_reason_for_extension') } 
 ---
 id: your name
 question:  |
@@ -275,18 +277,33 @@ question: |
   Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
   If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.
+
 field: service_choice 
 dropdown: 
   - eFile and serve (efilema.com): eFile and servie (efilema.com)
   - Email: email
   - Mail: mail
   - Hand delivery: hand delivery
+help:
+  label: How to eFile
+  heading: Find out how to eFile
+  content: |
+    ###   eFiling is recommended
+    [BR]
+    eFileMA allows filers to easily open court cases and e-file documents to participating courts anytime and from anywhere — 24 hours a day, seven days a week, 365 days a year. E-filing court documents significantly streamlines the case filing process and provides benefits to both the filer and the court.
+    [BR]
+    [BR]
+    Find out how to eFile and serve [here.](http://www.efilema.com/)
+
+
 ---
 id: name and address for service 
 question: |
-  List the name and address or email address of each attorney or self-represented party that you have served or will serve with copies of your motion, memorandum and supporting materials
+  List the name and address or email address of each attorney or self-represented party that you have served or will serve
 subquestion: | 
-   If you are serving more than one attorney or party, you may list more than one in the space provided
+  You must serve all parties with copies of your motion, memorandum and supporting materials. [BR]
+  [BR]
+   If you are serving more than one attorney or party, you may list more than one in the space provided.
 fields: 
   - no label: service_information 
     input type: area
@@ -294,6 +311,9 @@ fields:
 id: date of service 
 question: |
   Select the date on which you have made or will make service
+subquestion: |
+  It is required that these forms be sent to the other party on or before the date these forms are filed.  
+
 fields: 
   - Date: service_date 
     datatype: date
@@ -394,6 +414,7 @@ subquestion: |
   records.
   1. Click the "Submit to ${courts[0]}" button to send it to the court. 
   1. You will have a chance to add instructions to the clerk and see the cover page before final delivery.
+  
   % else:
   If you do not hear from the court in 1 business day, call the   Appeals Court Clerk's Office: 617-921-4443 
   
@@ -412,13 +433,13 @@ subquestion: |
   Or download/email below:
   % else:
     Your email has already been delivered to ${courts[0]}
-  % for file in final_form_to_file:
-  [:file-download: ${ file.info.get("filename") }](${file.url_for()})
-  % endfor 
   % endif
 progress: 100
 section: download
 attachment code: motion_attachment["final"]
+---
+code: |
+  bcc_failsafe = "cc@example.com"
 ---
 need:
   - comments_to_clerk
@@ -435,11 +456,9 @@ subquestion: |
   Click "Send to court" to deliver it.
   
   Here is what the clerk at ${courts} will get:
-  % for file in final_form_to_file:
-  ${ file }  
-  [:file-download: ${ file.info.get("filename") }](${file.url_for()})  
-  % endfor 
   
+  ${ final_form_to_file } 
+   
   % if found_email:
   We will deliver it securely. Please allow up to 15 minutes for the email to
   arrive.
@@ -471,11 +490,6 @@ fields:
   - Do you have any documents to share with the judge?: has_evidence_ready_to_upload
     datatype: yesnoradio
   - note: |
-     That is okay. It is not required that you provide proof. Tap next. 
-    show if: 
-      variable: has_evidence_ready_to_upload      
-      is: False
-  - note: |
       Take a picture of each document you want to upload, or get the files ready to
       upload on your computer or phone.
       
@@ -486,45 +500,45 @@ fields:
     show if: has_evidence_ready_to_upload
     accept: |
       "image/*, image/png,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"
+#---
+#table: exhibits.table
+#rows: exhibits
+#allow reordering: True
+#columns:
+#  - File name: showifdef(row_item.attr_name('filename'))
+#  - Thumbnail: row_item.show(width="100px")  
+#delete buttons: True
+#---
+#id: add additional document
+#question: |
+#  Exhibit document ${i+1}  
+#fields:
+#  - no label: exhibits[i]
+#    datatype: file
+#    accept: |
+#      "image/*, image/png,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"   
+#validation code: |
+#  # Upload field creates a DAFileList
+#  # We want it to be a plain DAFile instead
+#  if isinstance(exhibits[i], DAFileList):
+#    temp_name = exhibits[i].instanceName
+#    exhibits[i] = next(iter(exhibits[i]))
+#    # Make sure the "instanceName" shows the correct position in the list,
+#    # instead of showing a nested DAFileList's instanceName
+#    exhibits[i].instanceName = temp_name
 ---
-table: exhibits.table
-rows: exhibits
-allow reordering: True
-columns:
-  - File name: showifdef(row_item.attr_name('filename'))
-  - Thumbnail: row_item.show(width="100px")  
-delete buttons: True
----
-id: add additional document
-question: |
-  Exhibit document ${i+1}  
-fields:
-  - no label: exhibits[i]
-    datatype: file
-    accept: |
-      "image/*, image/png,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf,.pdf"   
-validation code: |
-  # Upload field creates a DAFileList
-  # We want it to be a plain DAFile instead
-  if isinstance(exhibits[i], DAFileList):
-    temp_name = exhibits[i].instanceName
-    exhibits[i] = next(iter(exhibits[i]))
-    # Make sure the "instanceName" shows the correct position in the list,
-    # instead of showing a nested DAFileList's instanceName
-    exhibits[i].instanceName = temp_name
----
-id: review exhibits
-question: |
-  Review your exhibits
-subquestion: |
-  Look at the exhibits below. If you want to change the order, use the arrows
-  to move an exhibit up or down in the list. Click "delete" or "add another"
-  to change which exhibits you send to the court.
-  
-  ${ exhibits.table }
-  
-  ${exhibits.add_action() }
-continue button field: review_exhibits
+#id: review exhibits
+#question: |
+#  Review your exhibits
+#subquestion: |
+#  Look at the exhibits below. If you want to change the order, use the arrows
+#  to move an exhibit up or down in the list. Click "delete" or "add another"
+#  to change which exhibits you send to the court.
+#  
+#  ${ exhibits.table }
+#  
+#  ${exhibits.add_action() }
+#continue button field: review_exhibits
 ---
 code: |
   if has_evidence_ready_to_upload:

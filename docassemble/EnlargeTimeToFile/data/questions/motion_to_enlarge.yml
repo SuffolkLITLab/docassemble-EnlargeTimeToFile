@@ -52,7 +52,7 @@ subquestion: |
   * the date by which you are able to file your brief by, within the court guidelines, and
   * create a complete certificate of service.
   
-  A copy of the motion must be served on all other parties to the appeal
+  A copy of the motion must be served on all other parties to the appeal.
 continue button field: info_screen
 ---
 #id: department and division 
@@ -95,9 +95,9 @@ id: user role
 question: |
   Are you an appellant or appellee ?
 subquestion: | 
-  An appellant is a party who is asks a higher court to review the decision of the lower court, regardless of their party designation in the trial court.
+  An **appellant** is a party who is asks a higher court to review the decision of the lower court, regardless of their party designation in the trial court.
   
-  An appellee is a party who is not appealing and intends to respond to the appellant's request for a review of the lower court's decision, regardless of their party designation in the trial court.
+  An **appellee** is a party who is not appealing and intends to respond to the appellant's request for a review of the lower court's decision, regardless of their party designation in the trial court.
   
 fields: 
   - no label: user_role 
@@ -187,9 +187,9 @@ fields:
 ---
 id: describe reason for time 
 question: |
-  Describe the reasons that you require additional time to file your brief 
+  Select the reason(s) that you require additional time to file your brief 
 subquestion: |
-  You will have a chance to give more detail on the next screen
+  You can add more detail on the next screen.
 fields: 
   - no label: reason_additional_time
     datatype: checkboxes
@@ -205,7 +205,9 @@ fields:
     datatype: yesnowide
   - Other: other_reason_for_extension
     show if: has_other_reason 
-    
+validation code: |
+  if reason_additional_time.all_false() and not has_other_reason:
+    validation_error("You must provide at least one reason", field='has_other_reason')
 ---
 id: show user description
 reconsider: True
@@ -217,7 +219,11 @@ fields:
   - no label: edited_explination 
     input type: area
     default: |
-      ${ (reason_additional_time).true_values() } .  ${ showifdef('other_reason_for_extension') } 
+      ${ (reason_additional_time).true_values() } 
+      % if has_other_reason:
+      ${ fix_punctuation(other_reason_for_extension) }
+      % endif
+# ${ showifdef('other_reason_for_extension') } 
 ---
 id: your name
 question:  |

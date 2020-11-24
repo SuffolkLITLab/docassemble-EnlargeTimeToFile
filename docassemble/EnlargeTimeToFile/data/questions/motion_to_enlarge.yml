@@ -34,6 +34,7 @@ code: |
   service_choice 
   service_information 
   service_date 
+  signature_date
   has_evidence_ready_to_upload
   preview_screen
   basic_questions_signature_flow
@@ -52,7 +53,7 @@ subquestion: |
   * the date by which you are able to file your brief by, within the court guidelines, and
   * create a complete certificate of service.
   
-  A copy of the motion must be served on all other parties to the appeal
+  A copy of the motion must be served on all other parties to the appeal.
 continue button field: info_screen
 ---
 #id: department and division 
@@ -95,9 +96,9 @@ id: user role
 question: |
   Are you an appellant or appellee ?
 subquestion: | 
-  An appellant is a party who is asks a higher court to review the decision of the lower court, regardless of their party designation in the trial court.
+  An **appellant** is a party who is asks a higher court to review the decision of the lower court, regardless of their party designation in the trial court.
   
-  An appellee is a party who is not appealing and intends to respond to the appellant's request for a review of the lower court's decision, regardless of their party designation in the trial court.
+  An **appellee** is a party who is not appealing and intends to respond to the appellant's request for a review of the lower court's decision, regardless of their party designation in the trial court.
   
 fields: 
   - no label: user_role 
@@ -187,9 +188,9 @@ fields:
 ---
 id: describe reason for time 
 question: |
-  Describe the reasons that you require additional time to file your brief 
+  Select the reason(s) that you require additional time to file your brief 
 subquestion: |
-  You will have a chance to give more detail on the next screen
+  You can add more detail on the next screen.
 fields: 
   - no label: reason_additional_time
     datatype: checkboxes
@@ -205,7 +206,9 @@ fields:
     datatype: yesnowide
   - Other: other_reason_for_extension
     show if: has_other_reason 
-    
+validation code: |
+  if reason_additional_time.all_false() and not has_other_reason:
+    validation_error("You must provide at least one reason", field='has_other_reason')
 ---
 id: show user description
 reconsider: True
@@ -217,7 +220,11 @@ fields:
   - no label: edited_explination 
     input type: area
     default: |
-      ${ (reason_additional_time).true_values() } .  ${ showifdef('other_reason_for_extension') } 
+      ${ (reason_additional_time).true_values() } 
+      % if has_other_reason:
+      ${ fix_punctuation(other_reason_for_extension) }
+      % endif
+# ${ showifdef('other_reason_for_extension') } 
 ---
 id: your name
 question:  |
@@ -232,41 +239,40 @@ fields:
       name_suffix()
     required: False  
 ---
-id: your contact information
+---
+---
+id: user address
 question: |
-  What is your contact information?
+  What is your address?
 subquestion: |
-  The court needs to be able to reach you.
-  
-  Include at least **one** way to reach you other than by mail.
-fields:  
+  List the address where you want the court to mail papers to you.
+fields:
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Unit: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: states_list()
+  - Zip: users[0].address.zip 
+---
+id: contact information
+question: |
+  Contact information
+subquestion: |
+  Provide at least one other way for the court to reach you. 
+fields:
   - Mobile number: users[0].mobile_number
     required: False
   - Other phone number: users[0].phone_number
     required: False
-  - Email address: users[0].email    
-    datatype: email
-    required: False
-  - Other ways to reach you: users[0].other_contact_method
-    input type: area
-    required: False
-    help: |
-      If you do not have a phone number or email the court can use, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to tell you the court is
-      trying to reach you.
 validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].mobile_number')) and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."))
-help: |
-  The court **must** be able to reach you. So you have to give them some way to do this.
-  
-  Some forms allow you to tell the court you need to keep your address, phone,
-  and email confidential, so that only court staff can see this information. 
-
+  if (not showifdef('users[0].phone_number') and 
+      (not showifdef('users[0].mobile_number'))):
+    validation_error(word("You need to provide at least one other contact method."))
 ---
 id: signature block 
 question: |
@@ -274,6 +280,7 @@ question: |
 --- 
 id: service 
 question: |
+  How will you deliver the required copies of the motion, memorandum, and supporting materials to the plaintiffs' attorney(s)?
   Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
   If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.
@@ -299,7 +306,7 @@ help:
 ---
 id: name and address for service 
 question: |
-  List the name and address or email address of each attorney or self-represented party that you have served or will serve
+  List the name and address (or email address) of each attorney or self-represented party that you have served or will serve
 subquestion: | 
   You must serve all parties with copies of your motion, memorandum and supporting materials. [BR]
   [BR]
@@ -310,9 +317,9 @@ fields:
 ---
 id: date of service 
 question: |
-  Select the date on which you have made or will make service
+  When will you deliver copies of your motion, memorandum, and supporting materials to the plaintiffs' attorney(s)?
 subquestion: |
-  It is required that these forms be sent to the other party on or before the date these forms are filed.  
+  You are required to provide a copy of this motion, memorandum, and supporting materials to the plaintiffs' attorney(s).
 
 fields: 
   - Date: service_date 
@@ -326,6 +333,16 @@ signature: x.signature
 under: |
   ${x}
 progress: 99  
+---
+id: signature date
+question: |
+  When do you plan to file these forms that we are working on?
+subquestion: |
+  We automatically answer "today" for you, below. You can change the date.
+fields: 
+  - Date: signature_date
+    datatype: date
+    default: ${today().format("yyyy-MM-dd")}
 ---
 id: signature choice
 decoration: file-signature

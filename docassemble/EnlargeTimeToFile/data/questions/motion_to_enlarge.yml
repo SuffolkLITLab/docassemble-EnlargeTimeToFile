@@ -34,6 +34,7 @@ code: |
   service_choice 
   service_information 
   service_date 
+  signature_date
   has_evidence_ready_to_upload
   preview_screen
   basic_questions_signature_flow
@@ -238,41 +239,40 @@ fields:
       name_suffix()
     required: False  
 ---
-id: your contact information
+---
+---
+id: user address
 question: |
-  What is your contact information?
+  What is your address?
 subquestion: |
-  The court needs to be able to reach you.
-  
-  Include at least **one** way to reach you other than by mail.
-fields:  
+  List the address where you want the court to mail papers to you.
+fields:
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Unit: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: states_list()
+  - Zip: users[0].address.zip 
+---
+id: contact information
+question: |
+  Contact information
+subquestion: |
+  Provide at least one other way for the court to reach you. 
+fields:
   - Mobile number: users[0].mobile_number
     required: False
   - Other phone number: users[0].phone_number
     required: False
-  - Email address: users[0].email    
-    datatype: email
-    required: False
-  - Other ways to reach you: users[0].other_contact_method
-    input type: area
-    required: False
-    help: |
-      If you do not have a phone number or email the court can use, provide
-      specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can rely on to tell you the court is
-      trying to reach you.
 validation code: |
-  if (not showifdef('users[0].phone_number') and \
-      (not showifdef('users[0].mobile_number')) and \
-      (not showifdef('users[0].email')) and \
-      (not showifdef('users[0].other_contact_method'))):
-    validation_error(word("You need to provide at least one contact method."))
-help: |
-  The court **must** be able to reach you. So you have to give them some way to do this.
-  
-  Some forms allow you to tell the court you need to keep your address, phone,
-  and email confidential, so that only court staff can see this information. 
-
+  if (not showifdef('users[0].phone_number') and 
+      (not showifdef('users[0].mobile_number'))):
+    validation_error(word("You need to provide at least one other contact method."))
 ---
 id: signature block 
 question: |
@@ -280,6 +280,7 @@ question: |
 --- 
 id: service 
 question: |
+  How will you deliver the required copies of the motion, memorandum, and supporting materials to the plaintiffs' attorney(s)?
   Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
   If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.
@@ -305,7 +306,7 @@ help:
 ---
 id: name and address for service 
 question: |
-  List the name and address or email address of each attorney or self-represented party that you have served or will serve
+  List the name and address (or email address) of each attorney or self-represented party that you have served or will serve
 subquestion: | 
   You must serve all parties with copies of your motion, memorandum and supporting materials. [BR]
   [BR]
@@ -316,9 +317,9 @@ fields:
 ---
 id: date of service 
 question: |
-  Select the date on which you have made or will make service
+  When will you deliver copies of your motion, memorandum, and supporting materials to the plaintiffs' attorney(s)?
 subquestion: |
-  It is required that these forms be sent to the other party on or before the date these forms are filed.  
+  You are required to provide a copy of this motion, memorandum, and supporting materials to the plaintiffs' attorney(s).
 
 fields: 
   - Date: service_date 
@@ -332,6 +333,16 @@ signature: x.signature
 under: |
   ${x}
 progress: 99  
+---
+id: signature date
+question: |
+  When do you plan to file these forms that we are working on?
+subquestion: |
+  We automatically answer "today" for you, below. You can change the date.
+fields: 
+  - Date: signature_date
+    datatype: date
+    default: ${today().format("yyyy-MM-dd")}
 ---
 id: signature choice
 decoration: file-signature

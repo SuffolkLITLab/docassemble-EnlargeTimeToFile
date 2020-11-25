@@ -1,6 +1,7 @@
 ---
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
+  - docassemble.MassAppealsCourt:appeals-basic-questions.yml
 ---
 code: |
   interview_short_title = "Ask the court for a Motion for Enlargement of Time to File Brief"
@@ -8,29 +9,30 @@ code: |
 code: |
   courts[0] = macourts.matching_appeals_court("")
 ---
-id: interview order
+id: interview order block
 mandatory: True
 code: |
   appeals_basic_questions_intro_screen
   info_screen
   users.there_is_another = False
   #trial_court_docket_number
-  appeals_court_docket_number
-  plaintiff_name
-  defendant_name
   if user_role == 'APPELLANT':
     if not docketing_statement: 
        docketing_warning
   if user_role == 'APPELLANT':
-    enlargement_choice  
+    enlargement_choice 
+  users[0].name.first
+  users[0].address.address
+  users[0].phone_number
+  user_needs_interpreter
+  appeals_court_docket_number
+  plaintiff_name
+  defendant_name
   current_due_date
   deadline_request
   previous_request_count
   reason_additional_time
   edited_explination 
-  users[0].name.first
-  users[0].address.address
-  users[0].phone_number
   service_choice 
   service_information 
   service_date 
@@ -74,7 +76,7 @@ id: appeals docket number
 question: |
   What is the **Appeals Court** docket number for your case?
 fields:
-  - 'Appeals Court docket number': appeals_court_docket_number
+  - 'Docket number': appeals_court_docket_number
 ---
 id: plaintiffs name
 question: |
@@ -147,6 +149,7 @@ fields:
     datatype: date
     min: ${ current_due_date.today() } 
     max: ${ current_due_date.plus(days=120) }
+
     
 #help: 
 #  label: Check for state holdiays
@@ -220,11 +223,8 @@ fields:
   - no label: edited_explination 
     input type: area
     default: |
-      ${ (reason_additional_time).true_values() } 
-      % if has_other_reason:
-      ${ fix_punctuation(other_reason_for_extension) }
-      % endif
-# ${ showifdef('other_reason_for_extension') } 
+      ${ (reason_additional_time).true_values() } ${ showifdef('other_reason_for_extension') }
+ 
 ---
 id: your name
 question:  |
@@ -239,41 +239,6 @@ fields:
       name_suffix()
     required: False  
 ---
----
----
-id: user address
-question: |
-  What is your address?
-subquestion: |
-  List the address where you want the court to mail papers to you.
-fields:
-  - Email address: users[0].email    
-    datatype: email
-    required: False
-  - Street address: users[0].address.address
-    address autocomplete: True
-  - Unit: users[0].address.unit
-    required: False
-  - City: users[0].address.city
-  - State: users[0].address.state
-    code: states_list()
-  - Zip: users[0].address.zip 
----
-id: contact information
-question: |
-  Contact information
-subquestion: |
-  Provide at least one other way for the court to reach you. 
-fields:
-  - Mobile number: users[0].mobile_number
-    required: False
-  - Other phone number: users[0].phone_number
-    required: False
-validation code: |
-  if (not showifdef('users[0].phone_number') and 
-      (not showifdef('users[0].mobile_number'))):
-    validation_error(word("You need to provide at least one other contact method."))
----
 id: signature block 
 question: |
   Name, physical address, email address, telephone number, date of completion
@@ -281,8 +246,9 @@ question: |
 id: service 
 question: |
   How will you deliver the required copies of the motion, memorandum, and supporting materials to the plaintiffs' attorney(s)?
-  Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
 subquestion: |
+  Select the method of delivery that you have used or will use to provide the required copies of the motion, memorandum and supporting materials to the other party(s) attorney(s).
+  
   If the other party(s) do not have an attorney, you are required to serve a copy on the self-represented party.
 
 field: service_choice 
@@ -291,18 +257,6 @@ dropdown:
   - Email: email
   - Mail: mail
   - Hand delivery: hand delivery
-help:
-  label: How to eFile
-  heading: Find out how to eFile
-  content: |
-    ###   eFiling is recommended
-    [BR]
-    eFileMA allows filers to easily open court cases and e-file documents to participating courts anytime and from anywhere — 24 hours a day, seven days a week, 365 days a year. E-filing court documents significantly streamlines the case filing process and provides benefits to both the filer and the court.
-    [BR]
-    [BR]
-    Find out how to eFile and serve [here.](http://www.efilema.com/)
-
-
 ---
 id: name and address for service 
 question: |
@@ -411,7 +365,6 @@ subquestion: |
   
    ${ form_to_sign }
 progress: 95
-attachment code: motion_attachment["preview"]
 ---
 id: download form
 event: download
@@ -445,7 +398,6 @@ subquestion: |
   
   ${ form_to_file_no_cover }  
   
-  ${action_button_html(url_action('review_all_sections'), icon='edit', label=word("Make changes"))}
   
   % if not defined('email_success') or not email_success:
     ${ action_button_html( url_action('form_delivery_complete'), id_tag="submitToCourt", label="Submit to " + str(courts[0].name), icon=send_icon, size="md", color="primary")}
@@ -515,7 +467,7 @@ fields:
       
       When you're ready, use the upload area below.
     show if: has_evidence_ready_to_upload
-  - Tap "browse" and choose all of the photos you want to upload at once. You can edit or add additional documents on the next screen.: exhibits
+  - Tap "browse" and choose all of the documents you want to upload at once.: exhibits
     datatype: files
     show if: has_evidence_ready_to_upload
     accept: |

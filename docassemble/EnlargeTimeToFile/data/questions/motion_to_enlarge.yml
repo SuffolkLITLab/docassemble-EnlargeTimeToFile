@@ -3,8 +3,12 @@ include:
   - docassemble.MAVirtualCourt:basic-questions.yml
   - docassemble.MassAppealsCourt:appeals-basic-questions.yml
 ---
+metadata:
+  title: Enlarge Time to File (Appeals Court)
+  short title: Enlarge Time
+---
 code: |
-  interview_short_title = "Ask the court for a Motion for Enlargement of Time to File Brief"
+  interview_short_title = "Ask the Appeals Court to Enlarge Time to File Your Brief"
 ---
 code: |
   courts[0] = macourts.matching_appeals_court("")

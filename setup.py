@@ -43,17 +43,17 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.EnlargeTimeToFile',
-      version='0.0.3',
-      description=('A docassemble extension.'),
+      version='0.1.0',
+      description=('Motion to Enlarge for Mass Appeals Court.'),
       long_description='# docassemble.EnlargeTimeToFile\r\n\r\nA docassemble extension.\r\n\r\n## Author\r\n\r\nAubrie Souza, asouza@su.suffolk.edu\r\n\r\n',
       long_description_content_type='text/markdown',
       author='Aubrie Souza',
       author_email='asouza@su.suffolk.edu',
       license='The MIT License (MIT)',
-      url='https://docassemble.org',
+      url='https://courtformsonline.org',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=[],
+      install_requires=['docassemble.ALToolbox'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/EnlargeTimeToFile/', package='docassemble.EnlargeTimeToFile'),
      )

@@ -5,8 +5,48 @@ include:
   - docassemble.ALToolbox:collapse_template.yml
 ---
 metadata:
-  title: Enlarge Time to File (Appeals Court)
-  short title: Enlarge Time
+  title: |
+    Enlarge Time to File (Appeals Court)
+  short title: |
+    Enlarge Time to File
+  description: |
+    If you need more time to file your brief in the Appeals Court, you can use this interview to 
+    ask for an **enlargement of time.**
+
+    This interview will help you tell the court:
+    
+    * the reason you need to ask for more time,
+    * the date by which you are able to file your brief by, within the court guidelines, and
+    * create a complete certificate of service.
+    
+    A copy of the motion must be served on all other parties to the appeal.    
+  can_I_use_this_form: |
+    You can use this form if you are part of a case before the Massachusetts Appeals Court and you need more time to file your brief.
+  before_you_start: |
+    You will need to know the following information to complete this interview:
+
+    * The **Appeals Court** docket number for your case
+    * The **trial court** docket number for your case
+    * The names of the plaintiff(s) and defendant(s) in your trial court case
+    * The current due date for your brief
+    * The date by which you are able to file your brief by, within the court guidelines    
+  maturity: production
+  estimated_completion_minutes: 15
+  estimated_completion_delta: 10
+  languages:
+    - en
+  help_page_url: https://www.mass.gov/info-details/motion-practice-in-the-appeals-court
+  help_page_title: Motion Practice in the Appeals Court
+  LIST_topics: 
+    - C0-07-02-00-00
+  tags: 
+    - C0-07-02-00-00
+  jurisdiction: NAM-US-US+MA
+  original_form_published_on: 2022
+  review_date: 2024
+  form_titles:
+    - Motion to Enlarge Time to File
+  update_notes: |
 ---
 code: |
   interview_short_title = "Ask the Appeals Court to Enlarge Time to File Your Brief"

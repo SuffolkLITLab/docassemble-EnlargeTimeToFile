@@ -38,9 +38,11 @@ metadata:
   help_page_url: https://www.mass.gov/info-details/motion-practice-in-the-appeals-court
   help_page_title: Motion Practice in the Appeals Court
   LIST_topics: 
-    - C0-07-02-00-00
+    - CO-07-02-00-00
+    - CO-07-12-00-00
   tags: 
-    - C0-07-02-00-00
+    - CO-07-02-00-00
+    - CO-07-12-00-00
   jurisdiction: NAM-US-US+MA
   original_form_published_on: 2022
   review_date: 2024

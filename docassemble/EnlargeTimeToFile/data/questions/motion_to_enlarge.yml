@@ -217,7 +217,9 @@ question: |
   Have you filed your docketing statement?
 subquestion: | 
   Each appellant or cross-appellant, other than a self-represented litigant who is incarcerated, is required to submit the  docketing statement within fourteen days of issuance of the notice of entry of the appeal. 
-yesno: docketing_statement
+fields:
+  - no label: docketing_statement
+    datatype: yesnoradio
 ---
 id: warning
 event: docketing_warning
@@ -378,7 +380,7 @@ under: |
   ${x}
 progress: 99  
 ---
-id: signature date
+id: "signature date 2"
 question: |
   When do you plan to file these forms that we are working on?
 subquestion: |
